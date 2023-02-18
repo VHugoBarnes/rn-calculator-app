@@ -7,64 +7,106 @@ const Calculator = () => {
   const INITIAL_NUMBER = "0";
 
   const [previousNumber, setPreviousNumber] = React.useState(INITIAL_NUMBER);
-  const [number, setNumber] = React.useState(INITIAL_NUMBER);
+  const [currentNumber, setCurrentNumber] = React.useState(INITIAL_NUMBER);
+  const [operand, setOperand] = React.useState("");
 
   const clear = () => {
-    setNumber("0");
+    setCurrentNumber(INITIAL_NUMBER);
+    setPreviousNumber(INITIAL_NUMBER);
+    setOperand("");
   };
 
   const getLastDigit = () => {
-    return number.charAt(number.length - 1);
+    return currentNumber.charAt(currentNumber.length - 1);
   };
 
   const buildNumber = (newDigit: string) => {
     //* Can't be 0's
     if (newDigit === "0" && getLastDigit() === "0") {
       //* If there is a ".", they can do it
-      if (!number.includes(".")) {
+      if (!currentNumber.includes(".")) {
         return;
       }
     }
 
     //* Can't have more than one point
-    if (newDigit === "." && number.includes(".")) {
+    if (newDigit === "." && currentNumber.includes(".")) {
       return;
     }
 
-    // Can't be more than 100 numbers long
-    if (number.length >= 100) {
+    //* Can't be more than 100 numbers long
+    if (currentNumber.length >= 100) {
       return;
     }
 
-    if (number === INITIAL_NUMBER) {
+    if (currentNumber === INITIAL_NUMBER) {
       if (newDigit === ".") {
-        setNumber(`${number}${newDigit}`);
+        setCurrentNumber(`${currentNumber}${newDigit}`);
       } else {
-        setNumber(newDigit);
+        setCurrentNumber(newDigit);
       }
       return;
     }
 
-    setNumber(`${number}${newDigit}`);
+    if (currentNumber === "-0" && newDigit !== ".") {
+      setCurrentNumber(`-${newDigit}`);
+      return;
+    }
+
+    setCurrentNumber(`${currentNumber}${newDigit}`);
     return;
   };
 
   const applyMinusPlus = () => {
-    if (number.includes("-")) {
-      setNumber(number.replace("-", ""));
+    if (currentNumber.includes("-")) {
+      setCurrentNumber(currentNumber.slice(1));
     } else {
-      setNumber(`-${number}`);
+      setCurrentNumber(`-${currentNumber}`);
     }
   };
 
   const del = () => {
-    if (number.length === 1 && number !== "-") {
-      setNumber(INITIAL_NUMBER);
-    } else if (number.startsWith("-") && number.length === 2) {
-      setNumber(INITIAL_NUMBER);
-    } else if (number.length > 1) {
-      setNumber(number.slice(0, number.length - 1));
+    if (currentNumber.length === 1 && currentNumber !== "-") {
+      setCurrentNumber(INITIAL_NUMBER);
+    } else if (currentNumber.startsWith("-") && currentNumber.length === 2) {
+      setCurrentNumber(INITIAL_NUMBER);
+    } else if (currentNumber.length > 1) {
+      setCurrentNumber(currentNumber.slice(0, currentNumber.length - 1));
     }
+  };
+
+  const applyOperand = (newOperand: string) => {
+    setOperand(newOperand);
+    setPreviousNumber(currentNumber);
+    setCurrentNumber(INITIAL_NUMBER);
+  };
+
+  const calculate = () => {
+    const number1 = parseFloat(previousNumber);
+    const number2 = parseFloat(currentNumber);
+    let result: string = INITIAL_NUMBER;
+
+    switch (operand) {
+      case "÷":
+        result = (number1 / number2).toString();
+        break;
+      case "x":
+        result = (number1 * number2).toString();
+        break;
+      case "-":
+        result = (number1 - number2).toString();
+        break;
+      case "+":
+        result = (number1 + number2).toString();
+        break;
+      default:
+        result = INITIAL_NUMBER;
+        break;
+    }
+
+    setCurrentNumber(result);
+    setPreviousNumber(INITIAL_NUMBER);
+    setOperand("");
   };
 
   return (
@@ -81,7 +123,7 @@ const Calculator = () => {
         numberOfLines={1}
         adjustsFontSizeToFit
       >
-        {number}
+        {operand !== "" && operand}{currentNumber}
       </Text>
 
       <View style={[styles.row]}>
@@ -102,6 +144,9 @@ const Calculator = () => {
         />
         <Button
           text="÷"
+          onPress={() => {
+            applyOperand("÷");
+          }}
           color="orange"
         />
       </View>
@@ -121,6 +166,9 @@ const Calculator = () => {
         />
         <Button
           text="x"
+          onPress={() => {
+            applyOperand("x");
+          }}
           color="orange"
         />
       </View>
@@ -140,6 +188,9 @@ const Calculator = () => {
         />
         <Button
           text="-"
+          onPress={() => {
+            applyOperand("-");
+          }}
           color="orange"
         />
       </View>
@@ -159,6 +210,9 @@ const Calculator = () => {
         />
         <Button
           text="+"
+          onPress={() => {
+            applyOperand("+");
+          }}
           color="orange"
         />
       </View>
@@ -175,6 +229,7 @@ const Calculator = () => {
         />
         <Button
           text="="
+          onPress={calculate}
           color="orange"
         />
       </View>
