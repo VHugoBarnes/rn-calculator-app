@@ -58,7 +58,9 @@ const Calculator = () => {
   };
 
   const del = () => {
-    if (number.length === 1) {
+    if (number.length === 1 && number !== "-") {
+      setNumber(INITIAL_NUMBER);
+    } else if (number.startsWith("-") && number.length === 2) {
       setNumber(INITIAL_NUMBER);
     } else if (number.length > 1) {
       setNumber(number.slice(0, number.length - 1));
